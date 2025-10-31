@@ -8,8 +8,11 @@ After extracting this folder wherever you want it.
 ### Unzipping Executables
 
 1. Go into `ytdlp-script\bin\` and extract the three zipped folders, `ffmpeg.zip`, `ffplay.zip`, and `ffprobe.zip`.
+    - You should be able to "extract" them by just double clicking the ".zip" folder and entering it.
 
-2. Place the three executables that were unzipped, `ffmpeg.exe`, `ffplay.exe`, and `ffprobe.exe`, in the same bin folder that yt-dlp.exe is.
+2. After entering the ".zip" folder, cut & paste/drag the three executables that were unzipped, `ffmpeg.exe`, `ffplay.exe`, and `ffprobe.exe`, in the same `ytdlp-script\bin\` folder that `yt-dlp.exe` is.
+    - The `ytdlp-script\bin\` folder should now consist of: `ffmpeg.exe`, `ffplay.exe`, `ffprobe.exe`, and `yt-dlp.exe`. 
+    - The ".zip" folders may still exist in this folder as well. You can either leave them as is, or delete them. 
 
 ### Converting ytdlp.txt into a Powershell Script
 
@@ -18,6 +21,8 @@ After extracting this folder wherever you want it.
 4. With the ytdlp.txt file open in notepad, Select “File” > “Save As” and save it with:
 * File name: ytdlp.ps1
 * Save as type: All Files
+
+The `ytdlp.txt` file will still exist in this folder after saving the new, `ytdlp.ps1` file. You can either leave it as is, or delete it. 
 
 ### Running the Script
 
