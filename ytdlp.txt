@@ -1,0 +1,324 @@
+# Consolidated yt-dlp Download Script
+# This script handles MP4 videos, MP3 audio, and subtitle downloads with user prompts
+
+# Display header
+Write-Host "=== yt-dlp Download Manager ===" -ForegroundColor Green
+Write-Host ""
+
+# Step A: Main download type selection
+do {
+    Write-Host "What do you want to download?" -ForegroundColor Yellow
+    Write-Host "1. MP4 Videos"
+    Write-Host "2. MP3 Audio" 
+    Write-Host "3. Subtitles Only"
+    Write-Host "9. EXIT SCRIPT" -ForegroundColor Red
+    Write-Host ""
+
+    $mainChoice = Read-Host "Enter your choice (1-3)"
+    
+    if ($mainChoice -eq '9') {
+        Write-Host "Script exited by user." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Press the ENTER key to exit...."
+        Read-Host | Out-Null
+        exit
+    }
+    
+} while ($mainChoice -notin @('1','2','3'))
+
+# Initialize variables
+$skip = ""
+$browserChoice = ""
+$subtitleChoice = ""
+
+# Step B: Skip existing downloads (only for MP4 and MP3)
+if ($mainChoice -in @('1','2')) {
+    do {
+        Write-Host ""
+        Write-Host "Do you want to skip URLs that you already downloaded? (Select NO if you need to redownload)" -ForegroundColor Yellow
+        Write-Host "1. Yes"
+        Write-Host "2. No"
+        Write-Host "9. EXIT SCRIPT" -ForegroundColor Red
+        Write-Host ""
+       
+        $skip = Read-Host "Enter your choice (1-2)"
+    
+        if ($skip -eq '9') {
+            Write-Host "Script exited by user." -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Press the ENTER key to exit...."
+            Read-Host | Out-Null
+            exit
+        }
+
+    } while ($skip -notin @('1','2'))
+} else {
+    # Step B.3: For subtitles only, automatically set skip to "no"
+    $skip = "2"
+}
+
+# # Step C: Content type (Single vs Playlist)
+# Write-Host ""
+# switch ($mainChoice) {
+#     '1' { 
+#         do {
+#             Write-Host "Are the Video URL's...:" -ForegroundColor Yellow
+#             Write-Host "1. Single Videos"
+#             Write-Host "2. Playlist"
+#             $contentType = Read-Host "Enter your choice (1-2)"
+#         } while ($contentType -notin @('1','2'))
+#     }
+#     '2' { 
+#         do {
+#             Write-Host "Are the MP3 Audio File URL's...:" -ForegroundColor Yellow
+#             Write-Host "1. Single MP3 Audios" 
+#             Write-Host "2. Album/Playlist"
+#             $contentType = Read-Host "Enter your choice (1-2)"
+#         } while ($contentType -notin @('1','2'))
+#     }
+#     '3' { 
+#         do {
+#             Write-Host "Are the subtitles needed for the Video URL's from...:" -ForegroundColor Yellow
+#             Write-Host "1. Single Videos"
+#             Write-Host "2. Playlist"
+#             $contentType = Read-Host "Enter your choice (1-2)"
+#         } while ($contentType -notin @('1','2'))
+#     }
+# }
+
+# Step D: Browser cookies selection
+do {
+    Write-Host ""
+    Write-Host "Use cookies from what internet browser? (Needed for age-restricted videos)" -ForegroundColor Yellow
+    Write-Host "1. Firefox"
+    Write-Host "2. Chrome" 
+    Write-Host "3. Edge"
+    Write-Host "4. No Cookies (Only choose no cookies if there is trouble downloading)"
+    Write-Host "9. EXIT SCRIPT" -ForegroundColor Red
+    Write-Host ""
+    
+    $browserChoice = Read-Host "Enter your choice (1-4)"
+
+    if ($browserChoice -eq '9') {
+        Write-Host "Script exited by user." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Press the ENTER key to exit...."
+        Read-Host | Out-Null
+        exit
+    }
+
+} while ($browserChoice -notin @('1','2','3','4'))
+
+# Step E: Subtitles selection (only for MP4 videos)
+if ($mainChoice -eq '1') {
+    do {
+        Write-Host ""
+        Write-Host "Do you want videos with...:" -ForegroundColor Yellow
+        Write-Host "1. No subtitles"
+        Write-Host "2. Subtitles"
+        Write-Host "9. EXIT SCRIPT" -ForegroundColor Red
+        Write-Host ""
+        
+        $subtitleChoice = Read-Host "Enter your choice (1-2)"
+    
+        if ($subtitleChoice -eq '9') {
+            Write-Host "Script exited by user." -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Press the ENTER key to exit...."
+            Read-Host | Out-Null
+            exit
+        }
+
+    } while ($subtitleChoice -notin @('1','2'))
+}
+
+# Build command components based on user choices
+
+# {ARCHIVE} component
+if ($skip -eq '1') {
+    $ARCHIVE = "--download-archive ..\archive\archive.txt"
+} else {
+    $ARCHIVE = ""
+}
+
+
+# {TITLE} and {INDEX} components - ALWAYS use playlist format, we'll clean up later
+$TITLE = "%(playlist_index|)s. %(title)s.%(ext)s"
+$INDEX = ""  # No longer use -I 1:1 since we handle both playlist and single
+# # {TITLE} and {INDEX} components
+# if ($contentType -eq '1') {
+#     # Single videos/audio
+#     $TITLE = "%(title)s.%(ext)s"
+#     $INDEX = "-I 1:1"
+# } else {
+#     # Playlist/Album
+#     $TITLE = "%(playlist_index)d_%(title)s.%(ext)s"
+#     $INDEX = ""
+# }
+
+# {COOKIES} component
+switch ($browserChoice) {
+    '1' { $COOKIES = "--cookies-from-browser firefox" }
+    '2' { $COOKIES = "--cookies-from-browser chrome" }
+    '3' { $COOKIES = "--cookies-from-browser edge" }
+    '4' { $COOKIES = "" }
+}
+
+# {SUBS} component
+if ($mainChoice -eq '1' -and $subtitleChoice -eq '2') {
+    $SUBS = "--write-sub --write-auto-sub --sub-lang `"en*`""
+} else {
+    $SUBS = ""
+}
+
+# Special handling for different download types
+$SPECIAL_OPTIONS = ""
+
+switch ($mainChoice) {
+    '2' { 
+        # MP3 Audio options
+        $SPECIAL_OPTIONS = "-f bestaudio --extract-audio --audio-format mp3 --audio-quality 320k"
+    }
+    '3' { 
+        # Subtitles only
+        $SPECIAL_OPTIONS = "--skip-download"
+        $SUBS = "--write-sub --write-auto-sub --sub-lang `"en*`""
+    }
+}
+
+
+
+do {
+   
+    # Display summary of choices
+    Write-Host ""
+    Write-Host "=== Summary of your choices ===" -ForegroundColor Cyan
+    switch ($mainChoice) {
+        '1' { Write-Host "Download Type: MP4 Videos" }
+        '2' { Write-Host "Download Type: MP3 Audio" }
+        '3' { Write-Host "Download Type: Subtitles only" }
+    }
+    
+    Write-Host "Skip Already Downloaded: $(if ($skip -eq '1') { 'Yes' } else { 'No' })"
+    # Write-Host "URL Content Type: $(if ($contentType -eq '1') { 'Single' } else { 'Playlist' })"
+    Write-Host "Browser: $(switch ($browserChoice) {'1' {'Firefox'} '2' {'Chrome'} '3' {'Edge'} '4' {'No Cookies'}})"
+    if ($mainChoice -eq '1') {
+        Write-Host "Subtitles: $(if ($subtitleChoice -eq '2') { 'Yes' } else { 'No' })"
+    }
+    
+    Write-Host ""
+    $confirmation = Read-Host "Proceed with download? (Y/N)"
+
+} while ($confirmation -notin @('Y','y','N','n'))
+
+if ($confirmation -notin @('Y','y')) {
+    Write-Host "Download cancelled." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Press the ENTER key to exit. Relaunch script to try again..."
+    Read-Host | Out-Null
+    exit
+}
+
+# Start download process
+Write-Host ""
+Write-Host "Starting download process..." -ForegroundColor Green
+
+# Change to the target directory
+Set-Location ".\Downloads"
+
+# Read URLs from the text file
+$urls = Get-Content -Path "..\urls.txt"
+
+# Make sure yt-dlp is updated
+Write-Host "Checking for yt-dlp updates..." -ForegroundColor Yellow
+..\bin\yt-dlp.exe -U
+
+# Download each URL
+$urlCount = $urls.Count
+$currentUrl = 1
+
+foreach ($url in $urls) {
+    if (-not [string]::IsNullOrWhiteSpace($url)) {
+        Write-Host ""
+        Write-Host "Processing URL $currentUrl of $urlCount : $url" -ForegroundColor Magenta
+        
+        # Replace & with "&" for safe URL handling
+        $safeUrl = $url -replace '&', '`"&`"'
+
+        # Build the full command
+        $fullCommand = "..\bin\yt-dlp.exe $ARCHIVE -o `"$TITLE`" `"$safeUrl`" $INDEX $SUBS $SPECIAL_OPTIONS $COOKIES"
+        
+        Write-Host "Command: $fullCommand" -ForegroundColor Gray
+        
+        # Execute the command
+        try {
+            Invoke-Expression $fullCommand
+        } catch {
+            Write-Host "Error processing URL: $url" -ForegroundColor Red
+            Write-Host "Error details: $_" -ForegroundColor Red
+        }
+        
+        $currentUrl++
+    }
+}
+
+# Clean up ". " files by renaming them
+Write-Host ""
+Write-Host "Cleaning up file names..." -ForegroundColor Yellow
+
+# Get all files that start with ". " and process them
+$filesToRename = Get-ChildItem -File | Where-Object { $_.Name -like ". *" }
+
+foreach ($file in $filesToRename) {
+    $newName = $file.Name -replace "^. ", ""
+    
+    try {
+        # Use -LiteralPath to handle special characters properly
+        Rename-Item -LiteralPath $file.FullName -NewName $newName -ErrorAction Stop
+        Write-Host "Renamed: '$($file.Name)' -> '$newName'" -ForegroundColor Green
+    } catch {
+        Write-Host "Failed to rename '$($file.Name)': $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Trying alternative method..." -ForegroundColor Yellow
+        
+        # Alternative approach: Use .NET methods which might handle encoding better
+        try {
+            [System.IO.File]::Move($file.FullName, (Join-Path $file.DirectoryName $newName))
+            Write-Host "Renamed using .NET method: '$($file.Name)' -> '$newName'" -ForegroundColor Green
+        } catch {
+            Write-Host "Failed with .NET method too: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+# Also clean up subtitle files if they exist
+$subtitleFilesToRename = Get-ChildItem -File | Where-Object { 
+    $_.Name -like ". *" -and $_.Extension -match "\.(vtt|srt|ass|ttml)"
+}
+
+foreach ($file in $subtitleFilesToRename) {
+    $newName = $file.Name -replace "^. ", ""
+    try {
+        Rename-Item -LiteralPath $file.FullName -NewName $newName -ErrorAction Stop
+        Write-Host "Renamed subtitle: '$($file.Name)' -> '$newName'" -ForegroundColor Green
+    } catch {
+        Write-Host "Failed to rename subtitle '$($file.Name)': $($_.Exception.Message)" -ForegroundColor Red
+        
+        # Try .NET method for subtitles too
+        try {
+            [System.IO.File]::Move($file.FullName, (Join-Path $file.DirectoryName $newName))
+            Write-Host "Renamed subtitle using .NET method: '$($file.Name)' -> '$newName'" -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to rename subtitle with .NET method: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+Write-Host ""
+Write-Host "SCRIPT COMPLETE" -ForegroundColor Green
+Set-Location ".."
+
+# Pause so user can see completion message
+Write-Host ""
+Write-Host "Press the ENTER key to exit...."
+Read-Host | Out-Null
+# $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
