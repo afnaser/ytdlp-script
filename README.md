@@ -5,45 +5,37 @@
 
 After extracting this folder wherever you want it.
 
-### Unzipping Executables
+### Converting RUN_SETUP.txt into a Powershell Script
 
-1. Go into `ytdlp-script\bin\` and extract the three zipped folders, `ffmpeg.zip`, `ffplay.zip`, and `ffprobe.zip`.
-    - You should be able to "extract" them by just double clicking the ".zip" folder and entering it.
+1. Open the “RUN_SETUP.txt” file.
 
-2. After entering the ".zip" folder, cut & paste/drag the three executables that were unzipped, `ffmpeg.exe`, `ffplay.exe`, and `ffprobe.exe`, in the same `ytdlp-script\bin\` folder that `yt-dlp.exe` is.
-    - The `ytdlp-script\bin\` folder should now consist of: `ffmpeg.exe`, `ffplay.exe`, `ffprobe.exe`, and `yt-dlp.exe`. 
-    - The ".zip" folders may still exist in this folder as well. You can either leave them as is, or delete them. 
-
-### Converting ytdlp.txt into a Powershell Script
-
-3. Open the “ytdlp.txt” file.
-
-4. With the ytdlp.txt file open in notepad, Select “File” > “Save As” and save it with:
-* File name: ytdlp.ps1
+2. With the "RUN_SETUP.txt" file open in notepad, Select “File” > “Save As” and save it with:
+* File name: RUN_SETUP.ps1
 * Save as type: All Files
 
-The `ytdlp.txt` file will still exist in this folder after saving the new, `ytdlp.ps1` file. You can either leave it as is, or delete it. 
+3. After the "RUN_SETUP.ps1" file is created, you can now right click it and select "Run with Powershell".
+* This unzips the required executables in the `bin` folder, as well as creates the "ytdlp.ps1" script.
 
-### Running the Script
+### Running the yt-dlp Script
 
-5. Any Youtube (or other website) videos/audios you want to download, simply copy the Website's URL and paste it in the "urls.txt" file.
+4. Any Youtube (or other website) videos/audios you want to download, simply copy the Website's URL and paste it in the "urls.txt" file.
 
 * ONE URL PER LINE
     - You can copy and paste multiple different URL's in the "urls.txt" file to download multiple videos at once. Make sure to only have one URL listed per line.
 
-* You can either copy and paste the URL of single videos/audios, or an entire playlist
+* You can either copy and paste the URL of single videos/audios, or a URL of an entire playlist
     - If you copy a playlist's URL, it will download all videos in the playlist and properly order/index them with a prefix (i.e. 1_VideoA, 2_VideoB, 3_VideoC)
 
-6. Right click the “ytdlp.ps1” file, and choose “Run with PowerShell”. This will run the script and ask you what you want to do.
-    - If you need to stop/cancel all downloads while in progress, press "ctrl + C"
+5. Right click the `ytdlp.ps1` file, and choose “Run with PowerShell”. This will run the script and ask you what you want to do.
+    - If you need to stop/cancel all downloads while in progress, press `ctrl + C`
 
 ### Explaining Additional Folders
 
-7. All downloads will be completed and listed in the "Downloads" folder inside this overall folder.
+6. All downloads will be completed and listed in the "Downloads" folder inside this overall folder.
 
-8. All programs being used are in the "bin" folder. You should never need to access this folder after unzipping executables into this folder.
+7. All programs being used are in the "bin" folder. You should never need to access this folder after unzipping the executables into this folder via the initial "RUN_SETUP.ps1" script.
 
-9. "archive.txt" file is found in the "archive" folder. If selected when you run the script, this will store the history of your downloads to prevent duplicates from being downloaded. You should not have to access this folder.
+8. "archive.txt" file is found in the "archive" folder. If selected when you run the script, this will store the history of your downloads to prevent duplicates from being downloaded. You should not have to access this folder.
 
 ---
 

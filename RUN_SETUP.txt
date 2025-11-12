@@ -1,0 +1,74 @@
+# Set the path to the parent directory where everything is located
+$parentDirectory = "."
+
+# Set the path to the 'bin' folder
+$binFolder = Join-Path $parentDirectory "\bin"
+
+# Get all the zip files in the bin folder
+$zipFiles = Get-ChildItem -Path $binFolder -Filter "*.zip"
+
+# Unzip each zip file inside the bin folder
+foreach ($zipFile in $zipFiles) {
+    $extractPath = Join-Path $binFolder ($zipFile.BaseName)
+
+    # Extract the zip file to a folder with the same name as the zip file
+    Write-Host "Unzipping $($zipFile.Name) to $extractPath"
+    Expand-Archive -Path $zipFile.FullName -DestinationPath $extractPath -Force
+}
+
+# Move the .exe files from the unzipped folders to the bin folder
+$subfolders = Get-ChildItem -Path $binFolder | Where-Object { $_.PSIsContainer }
+
+foreach ($folder in $subfolders) {
+    # Get the .exe file inside the folder
+    $exeFile = Get-ChildItem -Path $folder.FullName -Filter "*.exe" -File
+
+    if ($exeFile) {
+        # Move the .exe file to the bin folder
+        $destinationPath = Join-Path $binFolder $exeFile.Name
+        Write-Host "Moving $($exeFile.Name) to $binFolder"
+        Move-Item -Path $exeFile.FullName -Destination $destinationPath
+
+        # Delete the now-empty subfolder
+        Write-Host "Deleting empty folder $folder.FullName"
+        Remove-Item -Path $folder.FullName -Recurse -Force
+    }
+}
+
+# Clean up any remaining zip files in the parent directory (if applicable)
+$remainingZipFiles = Get-ChildItem -Path $binFolder -Filter "*.zip"
+foreach ($zip in $remainingZipFiles) {
+    Write-Host "Deleting leftover zip file: $($zip.Name)"
+    Remove-Item -Path $zip.FullName -Force
+}
+
+# Read the content from ytdlp.txt
+$ytdlpTxtFile = Join-Path $parentDirectory "ytdlp.txt"
+if (Test-Path $ytdlpTxtFile) {
+    $ytdlpContent = Get-Content -Path $ytdlpTxtFile
+
+    # Create a new ytdlp.ps1 file and write the content from ytdlp.txt into it
+    $ytdlpPs1File = Join-Path $parentDirectory "ytdlp.ps1"
+    Write-Host "Creating ytdlp.ps1 and writing content from ytdlp.txt"
+    Set-Content -Path $ytdlpPs1File -Value $ytdlpContent
+
+    # Delete the ytdlp.txt file
+    Write-Host "Deleting ytdlp.txt"
+    Remove-Item -Path $ytdlpTxtFile -Force
+}
+
+# End of Script
+Write-Host "Script completed successfully!"
+
+# Delete the RUN_SETUP.txt 
+$runSetupTxtFile = Join-Path $parentDirectory "RUN_SETUP.txt"
+
+if (Test-Path -Path $runSetupTxtFile) {
+    Write-Host "Deleting RUN_SETUP.txt"
+    Remove-Item -Path $runSetupTxtFile -Force
+}
+
+# Schedule the script to delete itself
+$scriptPath = $MyInvocation.MyCommand.Path
+Start-Sleep -Seconds 1  # Short delay to ensure script finishes executing
+Remove-Item -Path $scriptPath -Force
